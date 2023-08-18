@@ -1,11 +1,10 @@
-import torch.nn as nn
+import torch
 
-
-class LinearNet(nn.Module):
-    def __init__(self, num_arms, dim_context, norm=False):
+class LinearNet(torch.nn.Module):
+    def __init__(self, n_outputs, n_inputs, norm=False):
         super(LinearNet, self).__init__()
-        self.net = nn.Linear(dim_context, num_arms, bias=False)
-        self.norm = nn.LayerNorm(
+        self.net = torch.nn.Linear(n_inputs, n_outputs, bias=False)
+        self.norm = torch.nn.LayerNorm(
             dim_context, elementwise_affine=False) if norm else None
 
     def forward(self, x):
@@ -21,7 +20,6 @@ class LinearNet(nn.Module):
         return output
 
     def init_weights(self):
-
         self.net.reset_parameters()
 
 class LogisticRegression(torch.nn.Module):    
@@ -29,11 +27,14 @@ class LogisticRegression(torch.nn.Module):
     def __init__(self, n_inputs, n_outputs):
         super(LogisticRegression, self).__init__()
         self.linear = torch.nn.Linear(n_inputs, n_outputs)
+        # # initialize weights to zero so that bandit does not make 
+        # # optimistic start but rather samples randomly
+        # torch.nn.init.constant_(self.linear.weight, 0)
+        
     # make predictions
     def forward(self, x):
         y_pred = torch.sigmoid(self.linear(x))
         return y_pred
 
     def init_weights(self):
-
-        self.net.reset_parameters()
+        self.linear.reset_parameters()
